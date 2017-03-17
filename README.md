@@ -22,6 +22,8 @@ import(
 
   "github.com/julienschmidt/httprouter"
   "github.com/rileyr/middleware"
+  "github.com/rileyr/middleware/wares/requestID"
+  "github.com/rileyr/middleware/wares/logging"
 )
 
 // Define the middleware function:
@@ -44,6 +46,8 @@ func main() {
 
   // Use your middleware:
   s.Use(passThrough)
+  s.Use(requestID.RequestID)
+  s.Use(logging.Logging)
 
   // Wrap Handlers:
   router.GET("/", s.Wrap(handler))
