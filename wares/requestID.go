@@ -1,4 +1,4 @@
-package requestID
+package wares
 
 import (
 	"net/http"
@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	HeaderKey  = "X-Request-ID"
-	ContextKey = "requestID"
+	RequestIDHeaderKey  = "X-Request-ID"
+	RequestIDContextKey = "requestID"
 )
 
 // Request ID Middleware.
@@ -21,12 +21,12 @@ const (
 // all other middlewares have a request id available.
 func RequestID(fn httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		reqID := r.Header.Get(HeaderKey)
+		reqID := r.Header.Get(RequestIDHeaderKey)
 		if reqID == "" {
 			reqID = uuid.New().String()
 		}
 
-		ctx := context.WithValue(r.Context(), ContextKey, reqID)
+		ctx := context.WithValue(r.Context(), RequestIDContextKey, reqID)
 		fn(w, r.WithContext(ctx), p)
 	}
 }
