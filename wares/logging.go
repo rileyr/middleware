@@ -10,8 +10,9 @@ import (
 func Logging(fn httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		reqID, _ := r.Context().Value(RequestIDContextKey).(string)
-		log.Printf("START %s\n", reqID)
+		method := r.Method
+		log.Printf("START %s - %s\n", method, reqID)
 		fn(w, r, p)
-		log.Printf("END %s\n", reqID)
+		log.Printf("END %s - %s\n", method, reqID)
 	}
 }
