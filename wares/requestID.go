@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	RequestIDHeaderKey  = "X-Request-ID"
-	RequestIDContextKey = "requestID"
+	RequestIDHeaderKey = "X-Request-ID"
 )
+
+type RequestIDContextKey struct{}
 
 // Request ID Middleware.
 // Checks the X-Request-ID header. If not found,
@@ -26,7 +27,7 @@ func RequestID(fn httprouter.Handle) httprouter.Handle {
 			reqID = uuid.New().String()
 		}
 
-		ctx := context.WithValue(r.Context(), RequestIDContextKey, reqID)
+		ctx := context.WithValue(r.Context(), RequestIDContextKey{}, reqID)
 		fn(w, r.WithContext(ctx), p)
 	}
 }

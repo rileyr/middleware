@@ -14,11 +14,12 @@ func TestRequestID_NonePresent(t *testing.T) {
 
 	var reqID string
 	hn := func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		v, _ := r.Context().Value("requestID").(string)
+		v, _ := r.Context().Value(RequestIDContextKey{}).(string)
 		reqID = v
 	}
 
 	s.Use(RequestID)
+	s.Use(Logging)
 
 	wrapped := s.Wrap(hn)
 	req := httptest.NewRequest("GET", "/example", nil)
@@ -37,7 +38,7 @@ func TestRequestID_AlreadyPresent(t *testing.T) {
 	var originalReqID = "literally almost any string"
 	var reqID string
 	hn := func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		v, _ := r.Context().Value("requestID").(string)
+		v, _ := r.Context().Value(RequestIDContextKey{}).(string)
 		reqID = v
 	}
 

@@ -11,7 +11,7 @@ import (
 
 func Logging(fn httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		reqID, _ := r.Context().Value(RequestIDContextKey).(string)
+		reqID, _ := r.Context().Value(RequestIDContextKey{}).(string)
 		var code int
 
 		log.Printf("START id=%s method=%s url=%s\n", reqID, r.Method, r.URL)
