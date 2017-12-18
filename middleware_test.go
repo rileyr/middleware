@@ -72,6 +72,7 @@ func TestWrap_Ordering(t *testing.T) {
 			fn(w, r, p)
 		}
 	}
+
 	second := func(fn httprouter.Handle) httprouter.Handle {
 		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 			ts := time.Now()
@@ -111,7 +112,7 @@ func TestWrap_Ordering(t *testing.T) {
 	handler.ServeHTTP(w, req)
 
 	if firstCallAt == nil || secondCallAt == nil || thirdCallAt == nil || fourthCallAt == nil || handlerCallAt == nil {
-		t.Error("failed to call one or more functions")
+		t.Fatal("failed to call one or more functions")
 	}
 
 	if firstCallAt.After(*secondCallAt) || firstCallAt.After(*thirdCallAt) || firstCallAt.After(*fourthCallAt) || firstCallAt.After(*handlerCallAt) {
