@@ -59,41 +59,12 @@ func TestWrap(t *testing.T) {
 func TestWrap_Ordering(t *testing.T) {
 	s := NewStack()
 
-	var firstCallAt *time.Time
-	var secondCallAt *time.Time
-	var thirdCallAt *time.Time
-	var fourthCallAt *time.Time
 	var handlerCallAt *time.Time
 
-	first := func(fn httprouter.Handle) httprouter.Handle {
-		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-			ts := time.Now()
-			firstCallAt = &ts
-			fn(w, r, p)
-		}
-	}
-
-	second := func(fn httprouter.Handle) httprouter.Handle {
-		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-			ts := time.Now()
-			secondCallAt = &ts
-			fn(w, r, p)
-		}
-	}
-	third := func(fn httprouter.Handle) httprouter.Handle {
-		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-			ts := time.Now()
-			thirdCallAt = &ts
-			fn(w, r, p)
-		}
-	}
-	fourth := func(fn httprouter.Handle) httprouter.Handle {
-		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-			ts := time.Now()
-			fourthCallAt = &ts
-			fn(w, r, p)
-		}
-	}
+	first, firstCallAt := timingHandler()
+	second, secondCallAt := timingHandler()
+	third, thirdCallAt := timingHandler()
+	fourth, fourthCallAt := timingHandler()
 
 	s.Use(first)
 	s.Use(second)
@@ -111,7 +82,7 @@ func TestWrap_Ordering(t *testing.T) {
 	handler := http.HandlerFunc(plainHandler(wrapped))
 	handler.ServeHTTP(w, req)
 
-	if firstCallAt == nil || secondCallAt == nil || thirdCallAt == nil || fourthCallAt == nil || handlerCallAt == nil {
+	if firstCallAt.IsZero() || secondCallAt.IsZero() || thirdCallAt.IsZero() || fourthCallAt.IsZero() || handlerCallAt.IsZero() {
 		t.Fatal("failed to call one or more functions")
 	}
 
@@ -126,6 +97,20 @@ func TestWrap_Ordering(t *testing.T) {
 	if secondCallAt.After(*thirdCallAt) {
 		t.Error("expected second middleware to come before the third")
 	}
+}
+
+func timingHandler() (func(fn httprouter.Handle) httprouter.Handle, *time.Time) {
+	tmp := time.Time{}
+	var t *time.Time
+	t = &tmp
+
+	return func(fn httprouter.Handle) httprouter.Handle {
+		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+			ts := time.Now()
+			*t = ts
+			fn(w, r, p)
+		}
+	}, t
 }
 
 func TestWrap_WhenEmpty(t *testing.T) {
