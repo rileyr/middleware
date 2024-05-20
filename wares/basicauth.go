@@ -9,6 +9,9 @@ import (
 
 func BasicAuth(u, p string) func(httprouter.Handle) httprouter.Handle {
 	return func(fn httprouter.Handle) httprouter.Handle {
+		if u == "" || p == "" {
+			return fn
+		}
 		return func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 			user, pass, ok := r.BasicAuth()
 			if !ok || !auth(user, u, pass, p) {
