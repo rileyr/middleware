@@ -16,31 +16,32 @@ func Slogger(l *slog.Logger) func(httprouter.Handle) httprouter.Handle {
 
 	return func(fn httprouter.Handle) httprouter.Handle {
 		return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-			reqID, _ := r.Context().Value(RequestIDContextKey{}).(string)
 			var code int
 
-			l.Info(
-				"START",
-				"id", reqID,
-				"method", r.Method,
-				"url", r.URL,
-			)
-
 			defer func(ts time.Time) {
-				dur := time.Since(ts).String()
+				dur := time.Since(ts)
 				if code == 0 {
 					code = 500
 				}
 
+				path := r.URL.Path
+				if r.URL.RawQuery != "" {
+					path += "?" + r.URL.RawQuery
+				}
+
 				l.Info(
-					"END",
-					"id", reqID,
+					"request",
 					"method", r.Method,
-					"url", r.URL,
-					"code", code,
-					"duration", dur,
+					"path", path,
+					"status", code,
+					"duration", dur.String(),
 				)
 			}(time.Now())
+
+			// Fix: ensure params is never nil/empty for routes without path parameters
+			if p == nil || len(p) == 0 {
+				p = httprouter.Params{{Key: "", Value: ""}}
+			}
 
 			wrapper := func(w2 http.ResponseWriter, r2 *http.Request) {
 				fn(w2, r2, p)
